@@ -60,13 +60,24 @@ export default function PurchasesPage() {
   const [impactData, setImpactData] = useState(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
   
-  // Filters
+  // Pending filters (what user sees/types - not yet applied)
+  const [pendingVendor, setPendingVendor] = useState('all');
+  const [pendingStatus, setPendingStatus] = useState('all');
+  const [pendingWalkIn, setPendingWalkIn] = useState('all');
+  const [pendingCustomerId, setPendingCustomerId] = useState('');
+  const [pendingStartDate, setPendingStartDate] = useState('');
+  const [pendingEndDate, setPendingEndDate] = useState('');
+
+  // Applied filters (actually used for API calls)
   const [filterVendor, setFilterVendor] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterWalkIn, setFilterWalkIn] = useState('all'); // all | walk_in | saved
+  const [filterWalkIn, setFilterWalkIn] = useState('all');
   const [searchCustomerId, setSearchCustomerId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  // Debounce timer ref
+  const debounceTimerRef = useRef(null);
   
   // Form validation errors
   const [errors, setErrors] = useState({});
