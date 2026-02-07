@@ -835,14 +835,33 @@ export default function PurchasesPage() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Filters</CardTitle>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFilters}
+                data-testid="clear-filters-btn"
+              >
+                <RotateCcw className="w-4 h-4 mr-1" /> Clear
+              </Button>
+              <Button
+                size="sm"
+                onClick={applyFilters}
+                data-testid="apply-filters-btn"
+              >
+                <Search className="w-4 h-4 mr-1" /> Apply Filters
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="space-y-2">
               <Label>Vendor</Label>
-              <Select value={filterVendor} onValueChange={setFilterVendor}>
-                <SelectTrigger>
+              <Select value={pendingVendor} onValueChange={setPendingVendor}>
+                <SelectTrigger data-testid="filter-vendor">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -855,8 +874,8 @@ export default function PurchasesPage() {
             </div>
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger>
+              <Select value={pendingStatus} onValueChange={setPendingStatus}>
+                <SelectTrigger data-testid="filter-status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -870,8 +889,8 @@ export default function PurchasesPage() {
             </div>
             <div className="space-y-2">
               <Label>Vendor Type</Label>
-              <Select value={filterWalkIn} onValueChange={setFilterWalkIn}>
-                <SelectTrigger>
+              <Select value={pendingWalkIn} onValueChange={setPendingWalkIn}>
+                <SelectTrigger data-testid="filter-vendor-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -888,24 +907,33 @@ export default function PurchasesPage() {
               <Input
                 type="text"
                 placeholder="Search by Customer ID..."
-                value={searchCustomerId}
-                onChange={(e) => setSearchCustomerId(e.target.value)}
+                value={pendingCustomerId}
+                onChange={(e) => {
+                  setPendingCustomerId(e.target.value);
+                  debouncedApply();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') applyFilters();
+                }}
+                data-testid="filter-customer-id"
               />
             </div>
             <div className="space-y-2">
               <Label>Start Date</Label>
               <Input
                 type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                value={pendingStartDate}
+                onChange={(e) => setPendingStartDate(e.target.value)}
+                data-testid="filter-start-date"
               />
             </div>
             <div className="space-y-2">
               <Label>End Date</Label>
               <Input
                 type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                value={pendingEndDate}
+                onChange={(e) => setPendingEndDate(e.target.value)}
+                data-testid="filter-end-date"
               />
             </div>
           </div>
