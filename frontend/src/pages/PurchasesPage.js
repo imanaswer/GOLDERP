@@ -180,10 +180,10 @@ export default function PurchasesPage() {
       if (filterVendor && filterVendor !== 'all') params.append('vendor_party_id', filterVendor);
       if (filterStatus && filterStatus !== 'all') params.append('status', filterStatus);
       if (filterWalkIn && filterWalkIn !== 'all') {
-        params.append('vendor_type', filterWalkIn); // Fixed: use 'vendor_type' instead of 'is_walk_in'
+        params.append('vendor_type', filterWalkIn);
       }
       if (searchCustomerId && searchCustomerId.trim() !== '') {
-        params.append('customer_id', searchCustomerId.trim()); // Fixed: use 'customer_id' instead of 'vendor_oman_id'
+        params.append('customer_id', searchCustomerId.trim());
       }
       if (startDate) params.append('start_date', startDate);
       if (endDate) params.append('end_date', endDate);
@@ -195,6 +195,61 @@ export default function PurchasesPage() {
       toast.error('Failed to load purchases');
     }
   }, [currentPage, filterVendor, filterStatus, filterWalkIn, searchCustomerId, startDate, endDate]);
+
+  // Apply all pending filters at once
+  const applyFilters = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    setFilterVendor(pendingVendor);
+    setFilterStatus(pendingStatus);
+    setFilterWalkIn(pendingWalkIn);
+    setSearchCustomerId(pendingCustomerId);
+    setStartDate(pendingStartDate);
+    setEndDate(pendingEndDate);
+    setSearchParams({ page: '1' });
+  }, [pendingVendor, pendingStatus, pendingWalkIn, pendingCustomerId, pendingStartDate, pendingEndDate, setSearchParams]);
+
+  // Clear all filters
+  const clearFilters = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    setPendingVendor('all');
+    setPendingStatus('all');
+    setPendingWalkIn('all');
+    setPendingCustomerId('');
+    setPendingStartDate('');
+    setPendingEndDate('');
+    setFilterVendor('all');
+    setFilterStatus('all');
+    setFilterWalkIn('all');
+    setSearchCustomerId('');
+    setStartDate('');
+    setEndDate('');
+    setSearchParams({ page: '1' });
+  }, [setSearchParams]);
+
+  // Debounced auto-apply for text inputs (500ms delay)
+  const debouncedApply = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      applyFilters();
+    }, 500);
+  }, [applyFilters]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const loadInitialData = useCallback(async () => {
     setIsLoading(true);
