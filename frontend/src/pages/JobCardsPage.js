@@ -206,7 +206,7 @@ export default function JobCardsPage() {
           weight_out: item.weight_out ? parseFloat(item.weight_out) : null,
           purity: parseInt(item.purity),
           making_charge_value: item.making_charge_value ? parseFloat(item.making_charge_value) : null,
-          vat_percent: item.vat_percent ? parseFloat(item.vat_percent) : null
+          vat_percent: item.vat_percent !== undefined && item.vat_percent !== null && item.vat_percent !== '' ? parseFloat(item.vat_percent) : null
         }))
       };
 
@@ -315,7 +315,7 @@ export default function JobCardsPage() {
           weight_out: item.weight_out ? parseFloat(item.weight_out) : null,
           purity: parseInt(item.purity),
           making_charge_value: item.making_charge_value ? parseFloat(item.making_charge_value) : null,
-          vat_percent: item.vat_percent ? parseFloat(item.vat_percent) : null
+          vat_percent: item.vat_percent !== undefined && item.vat_percent !== null && item.vat_percent !== '' ? parseFloat(item.vat_percent) : null
         }))
       };
 
