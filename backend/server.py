@@ -5498,7 +5498,7 @@ async def convert_jobcard_to_invoice(jobcard_id: str, invoice_data: dict, curren
     count = await db.invoices.count_documents({"invoice_number": {"$regex": f"^INV-{year}"}})
     invoice_number = f"INV-{year}-{str(count + 1).zfill(4)}"
     
-    vat_percent = 5.0
+    default_vat_percent = 5.0
     invoice_items = []
     subtotal = 0
     
@@ -5525,8 +5525,13 @@ async def convert_jobcard_to_invoice(jobcard_id: str, invoice_data: dict, curren
         else:
             making_value = 5.0  # Default
         
-        # Use VAT from job card if provided, otherwise use default
-        item_vat_percent = item.get('vat_percent') or vat_percent
+        # FIX: Use 'is not None' check to properly handle vat_percent=0 (no VAT)
+        # Previously: item.get('vat_percent') or vat_percent treated 0 as falsy
+        item_vat_percent_raw = item.get('vat_percent')
+        if item_vat_percent_raw is not None:
+            item_vat_percent = float(item_vat_percent_raw)
+        else:
+            item_vat_percent = default_vat_percent
         
         # Store item temporarily (VAT will be calculated after discount)
         invoice_items.append({
@@ -5559,8 +5564,18 @@ async def convert_jobcard_to_invoice(jobcard_id: str, invoice_data: dict, curren
     # MODULE 7: Calculate taxable amount = subtotal - discount
     taxable = round(subtotal - discount_amount, 3)
     
-    # MODULE 7: Calculate VAT on taxable amount (after discount)
-    vat_total = round(taxable * vat_percent / 100, 3)
+    # FIX: Calculate VAT total from individual item VAT percentages, not a single hardcoded rate
+    # Each item can have its own vat_percent (e.g., 0 for no VAT, 5 for 5% VAT)
+    # VAT is distributed proportionally based on each item's subtotal contribution
+    vat_total = 0.0
+    for item_data in invoice_items:
+        item_subtotal = item_data['gold_value'] + item_data['making_value']
+        item_vat_pct = item_data.get('vat_percent', 0)
+        if subtotal > 0 and item_vat_pct > 0:
+            # Calculate proportional taxable amount for this item after discount
+            item_taxable = (item_subtotal / subtotal) * taxable
+            vat_total += item_taxable * (item_vat_pct / 100)
+    vat_total = round(vat_total, 3)
     
     # MODULE 7: Calculate grand total = taxable + VAT
     grand_total = round(taxable + vat_total, 3)
