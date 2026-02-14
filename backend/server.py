@@ -5605,17 +5605,19 @@ async def convert_jobcard_to_invoice(jobcard_id: str, invoice_data: dict, curren
     if balance_due < 0:
         balance_due = 0.0
     
-    # Second pass: Finalize invoice items with proportional VAT distribution
-    # VAT is distributed proportionally across items based on their subtotal contribution
+    # Second pass: Finalize invoice items with per-item VAT calculation
+    # FIX: Each item's VAT is calculated based on its own vat_percent, not a global rate
     final_invoice_items = []
     for item_data in invoice_items:
         item_subtotal = item_data['gold_value'] + item_data['making_value']
-        # Proportional VAT = (item_subtotal / total_subtotal) * total_VAT
-        if subtotal > 0:
-            item_vat_amount = round((item_subtotal / subtotal) * vat_total, 3)
+        item_vat_pct = item_data.get('vat_percent', 0)
+        # Calculate item's VAT based on its own vat_percent and proportional taxable amount
+        if subtotal > 0 and item_vat_pct > 0:
+            item_taxable = (item_subtotal / subtotal) * taxable
+            item_vat_amount = round(item_taxable * (item_vat_pct / 100), 3)
         else:
             item_vat_amount = 0.0
-        # Line total includes proportional share of VAT
+        # Line total includes item's VAT
         item_line_total = round(item_subtotal + item_vat_amount, 3)
         
         final_invoice_items.append(InvoiceItem(
