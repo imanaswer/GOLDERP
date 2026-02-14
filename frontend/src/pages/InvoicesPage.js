@@ -856,7 +856,7 @@ export default function InvoicesPage() {
                     <div className="text-xs text-blue-700 font-medium">Government Tax</div>
                     <div className="mt-2 pt-2 border-t border-blue-200">
                       <div className="text-xs text-blue-600">
-                        @ {viewInvoice.items && viewInvoice.items.length > 0 ? `${viewInvoice.items[0].vat_percent || 5}%` : '5%'}
+                        @ {viewInvoice.items && viewInvoice.items.length > 0 ? `${viewInvoice.items[0].vat_percent != null ? viewInvoice.items[0].vat_percent : 5}%` : '5%'}
                       </div>
                     </div>
                   </div>
