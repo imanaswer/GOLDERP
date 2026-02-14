@@ -53,7 +53,9 @@ def calculate_line_item(item: Dict[str, Any]) -> Dict[str, Any]:
     stone_charges = item.get('stone_charges', 0.0)
     wastage_charges = item.get('wastage_charges', 0.0)
     item_discount = item.get('item_discount', 0.0)
-    vat_percent = item.get('vat_percent', 5.0)
+    # FIX: Handle None vat_percent properly - use 0.0 if explicitly set to None/0
+    vat_percent_raw = item.get('vat_percent')
+    vat_percent = float(vat_percent_raw) if vat_percent_raw is not None else 5.0
     
     # Step 1: Calculate Gold Value
     # Gold Value = Net Weight × Rate per gram
